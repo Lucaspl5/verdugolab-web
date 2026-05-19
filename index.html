@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>verdugolab — Diseño de Interiores</title>
+  <meta name="description" content="Maite Verdugo · Diseñadora de interiores y espacios. Proyectos residenciales, reformas integrales y renders 3D.">
+
+  <!-- IMPORTANTE: Para que las imágenes se vean en la web,
+       la carpeta de Drive debe tener permisos "Cualquier persona con el enlace puede ver"
+       → Clic derecho en la carpeta → Compartir → Cambiar a "Cualquier persona con el enlace" -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─────────────────────────────────────────────────
+       VARIABLES
+    ───────────────────────────────────────────────── */
+    :root {
+      --bg:       #F4F2EE;
+      --text:     #0F0F0F;
+      --mid:      #555;
+      --light:    #999;
+      --border:   rgba(15,15,15,.1);
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'DM Sans', system-ui, sans-serif;
+      --ease:     cubic-bezier(.25,.46,.45,.94);
+    }
+
+    /* ─────────────────────────────────────────────────
+       RESET
+    ───────────────────────────────────────────────── */
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg);
+      color:var(--text);
+      font-family:var(--sans);
+      font-weight:300;
+      overflow-x:hidden;
+      cursor:none;
+    }
+    img { display:block; max-width:100%; }
+    a   { color:inherit; text-decoration:none; }
+
+    /* ─────────────────────────────────────────────────
+       CURSOR
+    ───────────────────────────────────────────────── */
+    #cur {
+      position:fixed; width:8px; height:8px;
+      background:var(--text); border-radius:50%;
+      pointer-events:none; z-index:9999;
+      transform:translate(-50%,-50%);
+      transition:transform .1s;
+    }
+    #curF {
+      position:fixed; width:36px; height:36px;
+      border:1px solid var(--text); border-radius:50%;
+      pointer-events:none; z-index:9998;
+      transform:translate(-50%,-50%);
+      transition:width .3s var(--ease), height .3s var(--ease), opacity .3s;
+      opacity:.5;
+    }
+    #curF.big { width:56px; height:56px; opacity:.25; }
+
+    /* ─────────────────────────────────────────────────
+       LOADER
+    ───────────────────────────────────────────────── */
+    #loader {
+      position:fixed; inset:0;
+      background:var(--text);
+      z-index:8000;
+      display:flex; align-items:center; justify-content:center;
+      overflow:hidden;
+    }
+    .ld-word {
+      font-family:var(--serif);
+      font-size:clamp(2rem,5vw,4.5rem);
+      font-weight:300;
+      color:var(--bg);
+      letter-spacing:.35em;
+      display:flex; overflow:hidden;
+    }
+    .ld-l { display:inline-block; transform:translateY(110%); }
+
+    /* ─────────────────────────────────────────────────
+       NAV
+    ───────────────────────────────────────────────── */
+    #nav {
+      position:fixed; top:0; left:0; right:0; z-index:1000;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:28px 60px;
+      transition:background .4s var(--ease), border-color .4s, padding .4s;
+    }
+    #nav.scrolled {
+      background:rgba(244,242,238,.92);
+      backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+      padding:18px 60px;
+    }
+    .nav-logo {
+      font-family:var(--serif);
+      font-size:1.35rem; font-weight:300;
+      letter-spacing:.22em;
+    }
+    .nav-links { display:flex; gap:44px; align-items:center; }
+    .nav-links a {
+      font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+      opacity:.65; transition:opacity .3s;
+      position:relative;
+    }
+    .nav-links a::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:1px; background:var(--text);
+      transition:width .35s var(--ease);
+    }
+    .nav-links a:hover { opacity:1; }
+    .nav-links a:hover::after { width:100%; }
+
+    /* ─────────────────────────────────────────────────
+       HERO
+    ───────────────────────────────────────────────── */
+    #hero {
+      min-height:100vh;
+      display:flex; flex-direction:column; justify-content:flex-end;
+      padding:0 60px 90px;
+      position:relative; overflow:hidden;
+    }
+    .hero-bg {
+      position:absolute; inset:0;
+    }
+    .hero-bg img {
+      width:100%; height:100%; object-fit:cover;
+      transform:scale(1.08);
+      transition:transform 2s var(--ease);
+    }
+    .hero-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(
+        to top,
+        rgba(244,242,238,.9) 0%,
+        rgba(244,242,238,.3) 55%,
+        rgba(244,242,238,.05) 100%
+      );
+    }
+    .hero-content { position:relative; z-index:2; max-width:860px; }
+    .hero-eyebrow {
+      font-size:.68rem; letter-spacing:.28em; text-transform:uppercase;
+      opacity:0; margin-bottom:22px;
+    }
+    .hero-title {
+      font-family:var(--serif);
+      font-size:clamp(3.2rem,8.5vw,9rem);
+      font-weight:300; line-height:1; letter-spacing:-.02em;
+    }
+    .hero-line { display:block; overflow:hidden; }
+    .hero-line-in { display:block; transform:translateY(110%); }
+    .hero-title em { font-style:italic; }
+    .hero-cta {
+      display:flex; align-items:center; gap:48px;
+      margin-top:44px; opacity:0;
+    }
+    .btn-view {
+      display:flex; align-items:center; gap:14px;
+      font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+      cursor:none;
+    }
+    .btn-view .bar {
+      width:52px; height:1px; background:var(--text);
+      transition:width .4s var(--ease);
+    }
+    .btn-view:hover .bar { width:88px; }
+    .hero-scr {
+      position:absolute; bottom:44px; right:60px; z-index:2;
+      opacity:0;
+    }
+    .hero-scr-line {
+      width:1px; height:64px; background:var(--text); margin:0 auto;
+      transform-origin:top;
+      animation:scrAnim 2.2s ease-in-out infinite;
+    }
+    @keyframes scrAnim {
+      0%   { transform:scaleY(0);   opacity:0; }
+      45%  { transform:scaleY(1);   opacity:.45; }
+      100% { transform:scaleY(0) translateY(64px); opacity:0; }
+    }
+
+    /* ─────────────────────────────────────────────────
+       ABOUT
+    ───────────────────────────────────────────────── */
+    #about {
+      padding:140px 60px;
+      display:grid; grid-template-columns:1fr 1fr; gap:80px;
+      align-items:center;
+      border-top:1px solid var(--border);
+    }
+    .sec-label {
+      font-size:.68rem; letter-spacing:.28em; text-transform:uppercase;
+      opacity:.45; margin-bottom:36px;
+    }
+    .about-title {
+      font-family:var(--serif);
+      font-size:clamp(2rem,3.8vw,3.6rem);
+      font-weight:300; line-height:1.2; margin-bottom:36px;
+    }
+    .about-title em { font-style:italic; }
+    .about-p {
+      font-size:.98rem; line-height:1.85;
+      color:var(--mid); margin-bottom:20px;
+    }
+    .services {
+      margin-top:48px;
+      display:grid; grid-template-columns:1fr 1fr; gap:20px;
+    }
+    .srv {
+      border-top:1px solid var(--border); padding-top:14px;
+    }
+    .srv-name {
+      font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .srv-desc { font-size:.84rem; color:var(--mid); line-height:1.5; }
+    .about-img {
+      aspect-ratio:4/5; overflow:hidden;
+    }
+    .about-img img {
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .8s var(--ease);
+    }
+    .about-img:hover img { transform:scale(1.04); }
+
+    /* ─────────────────────────────────────────────────
+       PROJECTS
+    ───────────────────────────────────────────────── */
+    #projects { padding:90px 60px 140px; }
+    .proj-hd {
+      display:flex; justify-content:space-between; align-items:flex-end;
+      border-top:1px solid var(--border); padding-top:40px; margin-bottom:72px;
+    }
+    .proj-title {
+      font-family:var(--serif);
+      font-size:clamp(2.5rem,5.5vw,5.5rem);
+      font-weight:300; line-height:1;
+    }
+    .proj-cnt {
+      font-family:var(--serif); font-size:1rem; color:var(--light);
+      align-self:flex-end; padding-bottom:6px;
+    }
+
+    /* Masonry-style grid 12 cols */
+    .proj-grid {
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:20px;
+    }
+    .pc { cursor:none; }
+    .pc:nth-child(1)  { grid-column:span 7; }
+    .pc:nth-child(2)  { grid-column:span 5; }
+    .pc:nth-child(3)  { grid-column:span 4; }
+    .pc:nth-child(4)  { grid-column:span 5; }
+    .pc:nth-child(5)  { grid-column:span 3; }
+    .pc:nth-child(6)  { grid-column:span 6; }
+    .pc:nth-child(7)  { grid-column:span 6; }
+    .pc:nth-child(8)  { grid-column:span 5; }
+    .pc:nth-child(9)  { grid-column:span 7; }
+
+    .pc-img {
+      overflow:hidden;
+      aspect-ratio:4/3;
+      background:#ddd;
+      position:relative;
+    }
+    .pc:nth-child(1) .pc-img,
+    .pc:nth-child(9) .pc-img  { aspect-ratio:16/9; }
+    .pc:nth-child(2) .pc-img,
+    .pc:nth-child(6) .pc-img  { aspect-ratio:3/4; }
+    .pc:nth-child(5) .pc-img  { aspect-ratio:1/1; }
+
+    .pc-img img {
+      width:100%; height:100%; object-fit:cover;
+      transform:scale(1.06);
+      transition:transform .9s var(--ease);
+    }
+    .pc:hover .pc-img img { transform:scale(1); }
+
+    /* hover tint */
+    .pc-img::after {
+      content:''; position:absolute; inset:0;
+      background:rgba(15,15,15,0);
+      transition:background .4s var(--ease);
+    }
+    .pc:hover .pc-img::after { background:rgba(15,15,15,.08); }
+
+    /* open arrow badge */
+    .pc-badge {
+      position:absolute; top:16px; right:16px; z-index:2;
+      width:40px; height:40px;
+      background:var(--bg); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.85rem;
+      opacity:0; transform:scale(.6);
+      transition:opacity .3s var(--ease), transform .3s var(--ease);
+    }
+    .pc:hover .pc-badge { opacity:1; transform:scale(1); }
+
+    .pc-info {
+      padding:14px 0 0;
+      display:flex; justify-content:space-between; align-items:baseline;
+    }
+    .pc-name {
+      font-family:var(--serif); font-size:1.25rem; font-weight:300;
+    }
+    .pc-type {
+      font-size:.68rem; letter-spacing:.12em; text-transform:uppercase;
+      color:var(--light); margin-top:3px;
+    }
+    .pc-num {
+      font-family:var(--serif); font-size:.9rem; color:var(--light);
+    }
+
+    /* ─────────────────────────────────────────────────
+       LIGHTBOX
+    ───────────────────────────────────────────────── */
+    #lb {
+      position:fixed; inset:0; z-index:5000;
+      background:rgba(244,242,238,.96);
+      backdrop-filter:blur(28px);
+      display:none; flex-direction:column;
+      opacity:0;
+    }
+    #lb.open { display:flex; }
+    .lb-hd {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:32px 60px; border-bottom:1px solid var(--border);
+      flex-shrink:0;
+    }
+    .lb-title {
+      font-family:var(--serif); font-size:1.9rem; font-weight:300;
+    }
+    .lb-sub {
+      font-size:.68rem; letter-spacing:.18em; text-transform:uppercase;
+      color:var(--light); margin-top:4px;
+    }
+    .lb-close {
+      width:46px; height:46px;
+      border:1px solid var(--border); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      cursor:none; font-size:1rem;
+      transition:background .3s, color .3s;
+    }
+    .lb-close:hover { background:var(--text); color:var(--bg); }
+    .lb-body {
+      flex:1; overflow-y:auto; padding:48px 60px;
+    }
+    .lb-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(360px,1fr));
+      gap:14px;
+    }
+    .lb-item {
+      overflow:hidden; aspect-ratio:4/3; background:#ddd;
+      opacity:0; transform:translateY(24px);
+    }
+    .lb-item img {
+      width:100%; height:100%; object-fit:cover;
+      transition:transform .7s var(--ease);
+    }
+    .lb-item:hover img { transform:scale(1.04); }
+
+    /* ─────────────────────────────────────────────────
+       CONTACT
+    ───────────────────────────────────────────────── */
+    #contact {
+      padding:140px 60px;
+      border-top:1px solid var(--border);
+      display:grid; grid-template-columns:1fr 1fr; gap:80px;
+      align-items:center;
+    }
+    .ct-title {
+      font-family:var(--serif);
+      font-size:clamp(2.5rem,5vw,5.5rem);
+      font-weight:300; line-height:1.1; margin-top:16px;
+    }
+    .ct-title em { font-style:italic; }
+    .ct-items { display:flex; flex-direction:column; gap:28px; }
+    .ct-item { border-top:1px solid var(--border); padding-top:18px; }
+    .ct-lbl {
+      font-size:.65rem; letter-spacing:.22em; text-transform:uppercase;
+      opacity:.45; margin-bottom:7px;
+    }
+    .ct-val {
+      font-family:var(--serif); font-size:1.3rem; font-weight:300;
+      transition:opacity .3s;
+    }
+    .ct-val:hover { opacity:.55; }
+
+    /* ─────────────────────────────────────────────────
+       FOOTER
+    ───────────────────────────────────────────────── */
+    footer {
+      padding:28px 60px; border-top:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .ft-logo { font-family:var(--serif); font-size:1rem; letter-spacing:.22em; }
+    .ft-copy { font-size:.68rem; letter-spacing:.1em; color:var(--light); }
+
+    /* ─────────────────────────────────────────────────
+       REVEAL
+    ───────────────────────────────────────────────── */
+    .rv { opacity:0; transform:translateY(36px); }
+
+    /* ─────────────────────────────────────────────────
+       MOBILE
+    ───────────────────────────────────────────────── */
+    @media (max-width:900px) {
+      body { cursor:auto; }
+      #cur, #curF { display:none; }
+      #nav { padding:18px 24px; }
+      #nav.scrolled { padding:14px 24px; }
+      .nav-links { gap:24px; }
+      #hero { padding:0 24px 72px; }
+      .hero-scr { right:24px; }
+      #about { grid-template-columns:1fr; padding:80px 24px; gap:48px; }
+      .about-img { order:-1; aspect-ratio:3/2; }
+      .about-img { aspect-ratio:3/2; }
+      #projects { padding:60px 24px 100px; }
+      .proj-grid { grid-template-columns:1fr 1fr; gap:12px; }
+      .pc:nth-child(n) { grid-column:span 1; }
+      .pc:nth-child(1),
+      .pc:nth-child(9) { grid-column:span 2; }
+      .pc-img { aspect-ratio:4/3 !important; }
+      #contact { grid-template-columns:1fr; padding:80px 24px; gap:48px; }
+      footer { padding:24px; flex-direction:column; gap:10px; text-align:center; }
+      .lb-hd { padding:20px 24px; }
+      .lb-body { padding:24px; }
+      .lb-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── CURSOR ─── -->
+<div id="cur"></div>
+<div id="curF"></div>
+
+<!-- ─── LOADER ─── -->
+<div id="loader">
+  <div class="ld-word">
+    <span class="ld-l">v</span><span class="ld-l">e</span><span class="ld-l">r</span><span class="ld-l">d</span><span class="ld-l">u</span><span class="ld-l">g</span><span class="ld-l">o</span><span class="ld-l" style="letter-spacing:.05em"> </span><span class="ld-l">l</span><span class="ld-l">a</span><span class="ld-l">b</span>
+  </div>
+</div>
+
+<!-- ─── NAV ─── -->
+<nav id="nav">
+  <a href="#" class="nav-logo">verdugolab</a>
+  <div class="nav-links">
+    <a href="#projects">Proyectos</a>
+    <a href="#about">Sobre mí</a>
+    <a href="#contact">Contacto</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg">
+    <img id="heroBg"
+      src="https://drive.google.com/thumbnail?id=1QhKs-PZlOeFU8lW6EvtnT-hKE7VnE9qc&sz=w1920"
+      alt="Interior design verdugolab">
+    <div class="hero-overlay"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow" id="hEy">Diseño de interiores · Barcelona</div>
+    <h1 class="hero-title">
+      <span class="hero-line"><span class="hero-line-in">Espacios que</span></span>
+      <span class="hero-line"><span class="hero-line-in"><em>cuentan</em></span></span>
+      <span class="hero-line"><span class="hero-line-in">tu historia</span></span>
+    </h1>
+    <div class="hero-cta" id="hCta">
+      <a href="#projects" class="btn-view">
+        <span class="bar"></span>
+        <span>Ver proyectos</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-scr" id="hScr">
+    <div class="hero-scr-line"></div>
+  </div>
+</section>
+
+<!-- ─── ABOUT ─── -->
+<section id="about">
+  <div class="rv">
+    <p class="sec-label">Sobre mí</p>
+    <h2 class="about-title">Maite Verdugo,<br><em>diseñadora</em> de interiores</h2>
+    <p class="about-p">
+      Con una mirada sensible al detalle y una profunda comprensión de cómo habitamos los espacios, Maite Verdugo crea entornos que van más allá de la estética: transforman la experiencia cotidiana.
+    </p>
+    <p class="about-p">
+      Cada proyecto es un diálogo entre quien vive el espacio y la arquitectura que lo acoge, buscando siempre el equilibrio entre funcionalidad, carácter y belleza.
+    </p>
+    <div class="services">
+      <div class="srv">
+        <div class="srv-name">Diseño de interiores</div>
+        <div class="srv-desc">Proyectos residenciales y comerciales desde cero.</div>
+      </div>
+      <div class="srv">
+        <div class="srv-name">Reformas integrales</div>
+        <div class="srv-desc">Transformación completa del espacio.</div>
+      </div>
+      <div class="srv">
+        <div class="srv-name">Renders 3D</div>
+        <div class="srv-desc">Visualización fotorrealista del proyecto.</div>
+      </div>
+      <div class="srv">
+        <div class="srv-name">Asesoría</div>
+        <div class="srv-desc">Consultoría de estilo y decoración.</div>
+      </div>
+    </div>
+  </div>
+  <div class="about-img rv">
+    <img src="https://drive.google.com/thumbnail?id=1B3OqzeInnyiGgKujPDH65w4lm4BNDoim&sz=w900"
+         alt="Interior por Maite Verdugo" loading="lazy">
+  </div>
+</section>
+
+<!-- ─── PROJECTS ─── -->
+<section id="projects">
+  <div class="proj-hd">
+    <div>
+      <p class="sec-label">Portafolio</p>
+      <h2 class="proj-title rv">Proyectos</h2>
+    </div>
+    <div class="proj-cnt">09</div>
+  </div>
+  <div class="proj-grid" id="grid"></div>
+</section>
+
+<!-- ─── LIGHTBOX ─── -->
+<div id="lb">
+  <div class="lb-hd">
+    <div>
+      <div class="lb-title" id="lbT"></div>
+      <div class="lb-sub"  id="lbS"></div>
+    </div>
+    <div class="lb-close" id="lbX">✕</div>
+  </div>
+  <div class="lb-body">
+    <div class="lb-grid" id="lbG"></div>
+  </div>
+</div>
+
+<!-- ─── CONTACT ─── -->
+<section id="contact">
+  <div class="rv">
+    <p class="sec-label">Contacto</p>
+    <h2 class="ct-title">¿Tienes un <em>proyecto</em><br>en mente?</h2>
+  </div>
+  <div class="ct-items rv">
+    <div class="ct-item">
+      <div class="ct-lbl">Email</div>
+      <a href="mailto:maiteverdugocalvo@gmail.com" class="ct-val">maiteverdugocalvo@gmail.com</a>
+    </div>
+    <div class="ct-item">
+      <div class="ct-lbl">Instagram</div>
+      <a href="https://instagram.com/verdugolab" target="_blank" rel="noopener" class="ct-val">@verdugolab</a>
+    </div>
+    <div class="ct-item">
+      <div class="ct-lbl">Ubicación</div>
+      <span class="ct-val">Barcelona, España</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="ft-logo">verdugolab</div>
+  <div class="ft-copy">© 2026 Maite Verdugo · Todos los derechos reservados</div>
+</footer>
+
+<!-- ─── ANIME.JS ─── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   DATA — all 9 projects with Google Drive image IDs
+   ─────────────────────────────────────────────────────────── */
+const D  = 'https://drive.google.com/thumbnail?id=';
+const SZ = '&sz=w1200';
+const img = (id) => D + id + SZ;
+
+const projects = [
+  {
+    name:'Andy', type:'Vivienda · Renders',
+    cover: img('1QhKs-PZlOeFU8lW6EvtnT-hKE7VnE9qc'),
+    images:[
+      img('1QhKs-PZlOeFU8lW6EvtnT-hKE7VnE9qc'),
+      img('1bR7U7y6IFtk-j_oI34no5JEhEtHrAwlX'),
+      img('1a0LGBS49cNOVb28zkZAEyoU-UKxcn8X1'),
+      img('1XHUS_f6g1E4QZvpBi96NXTKJxM6AEYDi'),
+      img('1vAOW47tiIHm-M-lfXq8KUn64tKK0uD5h'),
+      img('1FzQbNYjvqX7g_uRXbBWiPkra4et2dI87'),
+      img('1GB0yd0aoaQF___MBpkoMr2zaY7zV2wR4'),
+      img('1ecoQ31FflK1M3nzjeIDTziOF1E_8up_M'),
+      img('1a_64kadmXpxeVkL7ElWRnTNhssaPggEh'),
+      img('1REMjEYM60cUZBteRyO84IMYK-Hp-h3L9'),
+    ]
+  },
+  {
+    name:'Montse', type:'Reforma integral',
+    cover: img('1yr4TASvfGerCRE66K0rMYPXimSB0m0wT'),
+    images:[
+      img('1yr4TASvfGerCRE66K0rMYPXimSB0m0wT'),
+      img('1pWygF3_ZOm6IE0tWgz6NqbjelVPMiOoO'),
+      img('1gRRF-CLUwHS1yXVxnZW8fTh5ykR4kX0o'),
+    ]
+  },
+  {
+    name:'Laura 02', type:'Apartamento',
+    cover: img('14D5PVrW_mXGEsDX5UtXNmVkMppYqx-uh'),
+    images:[
+      img('14D5PVrW_mXGEsDX5UtXNmVkMppYqx-uh'),
+      img('1ukoGkIovT_S_KZZ7ssS5tlUqURX8NWet'),
+      img('1QgkEWZSvpj0tm9Uia2vU1ZyhdYH6f_Xc'),
+    ]
+  },
+  {
+    name:'Bibi', type:'Diseño residencial',
+    cover: img('1V6p8ikGhiQrcm7_QD77-_AO6WaMhJi9_'),
+    images:[ img('1V6p8ikGhiQrcm7_QD77-_AO6WaMhJi9_') ]
+  },
+  {
+    name:'Sala Cine', type:'Entretenimiento',
+    cover: img('1synHkrr8mIOKIVIV4TL0FEYhEJqtBZqe'),
+    images:[
+      img('1synHkrr8mIOKIVIV4TL0FEYhEJqtBZqe'),
+      img('1GjzzclSsJrsdlM_c8yv0_-b_jZFzAfy0'),
+      img('1AAEFisYh9d7dIw7AXI_xN3Pxbh-QczoV'),
+      img('1Fv7a-99GKdRUMmB3RuxzZqPQDxnO2rbG'),
+    ]
+  },
+  {
+    name:'Pilar', type:'Vivienda residencial',
+    cover: img('1P_ZcrwyCBSsUPwTPIg6_dNTUfL2adaJI'),
+    images:[
+      img('1P_ZcrwyCBSsUPwTPIg6_dNTUfL2adaJI'),
+      img('1N-GhLeRxUOHQzy_wuxaqo9tSqyGVbE1d'),
+      img('1NycFIb5IBOTBpHRFjuBdVb8u1JfK7bEL'),
+      img('1VapYjfCGV7bMQT0dZ3rXqK2wxymSXbCx'),
+      img('1B3OqzeInnyiGgKujPDH65w4lm4BNDoim'),
+      img('1bEtGhEdxfkO429d-SIzSrwvp0YAI7b1W'),
+    ]
+  },
+  {
+    name:'Laura', type:'Reforma integral',
+    cover: img('1f52ttjFUVoR8xbFDh_F-8GsZEizo8qaR'),
+    images:[
+      img('1f52ttjFUVoR8xbFDh_F-8GsZEizo8qaR'),
+      img('1z-3TY3p0l5gs-awoTvem7puvco8uBBtD'),
+      img('1LZDr_20OxfM7hvOKFEEBIQxF-fBMSjye'),
+      img('1NQq4M4K3jypFove-TOBLUxUEAPakINVN'),
+      img('1PKSb1d39BlUO4gAYZex4p0Qcd_Ls7zMn'),
+      img('1nV9gAG2887WXF5XllLGkFzkMWRWWt8r4'),
+      img('1y4j2oybBBPrMKmDZDOk7Sw2s_wO1p_hy'),
+      img('1ffM5cnAlGGhoONsxB6O8fc8a5XHqpauj'),
+      img('1ClXgxgDOZqK5kgmCM1LHou9JcGXro57J'),
+      img('1P-Sf4JQ2e3zvRlZgmo97b2hxss629pxr'),
+    ]
+  },
+  {
+    name:'Anabel', type:'Diseño residencial',
+    cover: img('1CFQukwyTWToXUArgmRYtKQmFKkB2icVc'),
+    images:[
+      img('1CFQukwyTWToXUArgmRYtKQmFKkB2icVc'),
+      img('1Ma3a7RQt4ztAWnAuxl2R6dgdVe4d2PGa'),
+      img('1yi5tpGpT3HKHhbNRtNlN5_v_m0qGx3MC'),
+      img('1ere3fQSDGIrNeXZFPF0X50w63Mj15HQ1'),
+      img('12Nm_RxQLzPiQ_chZXNCPBDxkSs7bUrM6'),
+      img('1ynXDg6oQGsXDJdASvCFd_EgxrS577MH5'),
+      img('1P2TpnBjx41UsKfl7zR6AuRwFicUoeWox'),
+    ]
+  },
+  {
+    name:'Jonathan', type:'Espacio residencial',
+    cover: img('1Hva0J1J4ya-Mf41yVK_u92MUdmkgz27w'),
+    images:[ img('1Hva0J1J4ya-Mf41yVK_u92MUdmkgz27w') ]
+  },
+];
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER PROJECT CARDS
+   ─────────────────────────────────────────────────────────── */
+const grid = document.getElementById('grid');
+projects.forEach((p, i) => {
+  const n = String(i+1).padStart(2,'0');
+  const el = document.createElement('div');
+  el.className = 'pc rv';
+  el.innerHTML = `
+    <div class="pc-img">
+      <img src="${p.cover}" alt="${p.name}" loading="lazy">
+      <div class="pc-badge">↗</div>
+    </div>
+    <div class="pc-info">
+      <div>
+        <div class="pc-name">${p.name}</div>
+        <div class="pc-type">${p.type}</div>
+      </div>
+      <div class="pc-num">${n}</div>
+    </div>`;
+  el.addEventListener('click', () => openLB(p));
+  grid.appendChild(el);
+});
+
+/* ─────────────────────────────────────────────────────────────
+   LIGHTBOX
+   ─────────────────────────────────────────────────────────── */
+const lb   = document.getElementById('lb');
+const lbT  = document.getElementById('lbT');
+const lbS  = document.getElementById('lbS');
+const lbG  = document.getElementById('lbG');
+const lbX  = document.getElementById('lbX');
+
+function openLB(p) {
+  lbT.textContent = p.name;
+  lbS.textContent = p.images.length + ' imágenes · ' + p.type;
+  lbG.innerHTML = '';
+  p.images.forEach(src => {
+    const d = document.createElement('div');
+    d.className = 'lb-item';
+    d.innerHTML = `<img src="${src}" alt="${p.name}" loading="lazy">`;
+    lbG.appendChild(d);
+  });
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  anime({ targets:'#lb',     opacity:[0,1], duration:350, easing:'easeOutQuad' });
+  anime({ targets:'.lb-item', opacity:[0,1], translateY:[24,0],
+          duration:600, delay:anime.stagger(70,{start:200}), easing:'easeOutCubic' });
+}
+
+function closeLB() {
+  anime({ targets:'#lb', opacity:[1,0], duration:260, easing:'easeInQuad',
+    complete(){ lb.classList.remove('open'); document.body.style.overflow=''; }
+  });
+}
+
+lbX.addEventListener('click', closeLB);
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeLB(); });
+
+/* ─────────────────────────────────────────────────────────────
+   CUSTOM CURSOR
+   ─────────────────────────────────────────────────────────── */
+const cur  = document.getElementById('cur');
+const curF = document.getElementById('curF');
+let mx=0, my=0, fx=0, fy=0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx+'px';
+  cur.style.top  = my+'px';
+});
+
+(function tick(){
+  fx += (mx-fx)*0.11;
+  fy += (my-fy)*0.11;
+  curF.style.left = fx+'px';
+  curF.style.top  = fy+'px';
+  requestAnimationFrame(tick);
+})();
+
+document.querySelectorAll('a,button,.pc,.lb-close').forEach(el => {
+  el.addEventListener('mouseenter', ()=> curF.classList.add('big'));
+  el.addEventListener('mouseleave', ()=> curF.classList.remove('big'));
+});
+
+/* ─────────────────────────────────────────────────────────────
+   NAV SCROLL STATE
+   ─────────────────────────────────────────────────────────── */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', ()=>{
+  nav.classList.toggle('scrolled', window.scrollY > 70);
+}, {passive:true});
+
+/* ─────────────────────────────────────────────────────────────
+   LOADER → HERO ANIMATION
+   ─────────────────────────────────────────────────────────── */
+window.addEventListener('load', ()=>{
+  const tl = anime.timeline({ easing:'easeOutExpo' });
+
+  /* 1. Loader letters fall in */
+  tl.add({
+    targets:'.ld-l',
+    translateY:['110%','0%'],
+    opacity:[0,1],
+    duration:900,
+    delay:anime.stagger(55),
+  })
+  /* 2. Loader fades out */
+  .add({
+    targets:'#loader',
+    opacity:[1,0],
+    duration:550,
+    delay:320,
+    easing:'easeInQuad',
+    complete(){ document.getElementById('loader').style.display='none'; }
+  })
+  /* 3. Hero BG subtly zooms in */
+  .add({
+    targets:'#heroBg',
+    scale:[1.08,1.02],
+    duration:1800,
+    easing:'easeOutCubic',
+  },'-=550')
+  /* 4. Hero title lines up */
+  .add({
+    targets:'.hero-line-in',
+    translateY:['110%','0%'],
+    duration:1000,
+    delay:anime.stagger(130),
+    easing:'easeOutExpo',
+  },'-=1500')
+  /* 5. Eyebrow */
+  .add({
+    targets:'#hEy',
+    opacity:[0,1],
+    translateY:[16,0],
+    duration:600,
+  },'-=700')
+  /* 6. CTA */
+  .add({
+    targets:'#hCta',
+    opacity:[0,1],
+    translateY:[16,0],
+    duration:600,
+  },'-=450')
+  /* 7. Scroll indicator */
+  .add({
+    targets:'#hScr',
+    opacity:[0,1],
+    duration:400,
+  },'-=300');
+});
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLL REVEAL — IntersectionObserver
+   ─────────────────────────────────────────────────────────── */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if(!en.isIntersecting) return;
+    anime({
+      targets: en.target,
+      opacity: [0,1],
+      translateY: [36,0],
+      duration: 900,
+      easing: 'easeOutCubic',
+    });
+    io.unobserve(en.target);
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+/* ─────────────────────────────────────────────────────────────
+   PROJECT GRID STAGGER
+   ─────────────────────────────────────────────────────────── */
+const ioGrid = new IntersectionObserver(entries => {
+  if(!entries[0].isIntersecting) return;
+  anime({
+    targets:'.pc',
+    opacity:[0,1],
+    translateY:[50,0],
+    duration:800,
+    delay: anime.stagger(90),
+    easing:'easeOutCubic',
+  });
+  ioGrid.disconnect();
+}, { threshold:0.08 });
+ioGrid.observe(document.getElementById('grid'));
+
+/* ─────────────────────────────────────────────────────────────
+   PARALLAX on hero image (subtle)
+   ─────────────────────────────────────────────────────────── */
+window.addEventListener('scroll', ()=>{
+  const y = window.scrollY;
+  if(y < window.innerHeight) {
+    document.getElementById('heroBg').style.transform =
+      `scale(1.02) translateY(${y * 0.18}px)`;
+  }
+}, {passive:true});
+
+/* ─────────────────────────────────────────────────────────────
+   ABOUT section — number counter animation (nice touch)
+   ─────────────────────────────────────────────────────────── */
+const ioAbout = new IntersectionObserver(entries => {
+  if(!entries[0].isIntersecting) return;
+  anime({
+    targets:'.about-img img',
+    scale:[1.06,1],
+    opacity:[0,1],
+    duration:1200,
+    easing:'easeOutCubic',
+  });
+  ioAbout.disconnect();
+},{threshold:0.2});
+const aboutImg = document.querySelector('.about-img');
+if(aboutImg) ioAbout.observe(aboutImg);
+</script>
+</body>
+</html>
